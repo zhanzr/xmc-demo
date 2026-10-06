@@ -1,0 +1,26 @@
+# Build artifacts
+build/
+_build/
+build-*/
+
+# Binaries / objects
+*.elf
+*.hex
+*.bin
+*.map
+*.o
+*.obj
+*.a
+*.lst
+
+# Logs
+*.log
+*.mdb
+*.ini
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store
