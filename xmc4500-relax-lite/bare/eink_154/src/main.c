@@ -190,9 +190,11 @@ static void quadrant_page(void)
 }
 
 /* --------------------------------------------------------------------- */
-/* Horizontal dithered gradient (black -> white) using a 4x4 Bayer matrix. */
+/* Dithered gradient (black -> white) using a 4x4 Bayer matrix. The direction
+ * rotates each pass: L->R, T->B, R->L, B->T. */
 static void gradient_page(void)
 {
+    static unsigned dir = 0U;
     static const uint8_t bayer4[4][4] =
     {
         {  0,  8,  2, 10 },
@@ -205,7 +207,16 @@ static void gradient_page(void)
     {
         for (int x = 0; x < EPD_WIDTH; x++)
         {
-            int level = x * 16 / EPD_WIDTH;  /* 0..15 */
+            int level;
+
+            switch (dir)
+            {
+                case 0:  level = x * 16 / EPD_WIDTH; break;                       /* L -> R */
+                case 1:  level = y * 16 / EPD_HEIGHT; break;                      /* T -> B */
+                case 2:  level = (EPD_WIDTH - 1 - x) * 16 / EPD_WIDTH; break;     /* R -> L */
+                default: level = (EPD_HEIGHT - 1 - y) * 16 / EPD_HEIGHT; break;   /* B -> T */
+            }
+
             canvas_pixel(x, y, (bayer4[y & 3][x & 3] < level) ? 1 : 0);
         }
     }
@@ -213,6 +224,8 @@ static void gradient_page(void)
     canvas_rect(0, 0, EPD_WIDTH - 1, EPD_HEIGHT - 1, 1);
     epd_show();
     board_delay_ms(DWELL_MS);
+
+    dir = (dir + 1U) & 3U;
 }
 
 /* --------------------------------------------------------------------- */
@@ -257,6 +270,8 @@ int main(void)
     {
         printf("[epd] page: banner\r\n");
         banner_page();
+        printf("[epd] frame upload: %lu ms (SPI FIFO burst)\r\n",
+               (unsigned long)epdif_last_burst_ms());
 
         printf("[epd] page: info\r\n");
         info_page();

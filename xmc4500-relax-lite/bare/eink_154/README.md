@@ -33,7 +33,7 @@ USIC2 channel 0 hardware SPI, **mode 0** (CPOL = 0, CPHA = 0), MSB first,
 | banner     | title text in a double border                                       |
 | info       | compiler/pins + **DTS**, **EVR13**, **EVR33** and CPU clock         |
 | quadrant   | solid black / solid white / checkerboard / 25 % dither + centre cross |
-| gradient   | horizontal 4x4-Bayer dithered black→white ramp                      |
+| gradient   | 4x4-Bayer dithered black→white ramp, direction rotating each pass (L→R, T→B, R→L, B→T) |
 | LED        | "LED on" / "LED off" pages with both LEDs toggling                  |
 
 Each page re-initialises the panel and refreshes (a full update takes ~2 s).

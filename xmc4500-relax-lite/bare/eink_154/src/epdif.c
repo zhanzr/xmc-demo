@@ -17,6 +17,7 @@
 #include "XMC4500.h"
 #include "xmc_gpio.h"
 #include "xmc_spi.h"
+#include "xmc_usic.h"
 
 #define EPD_CS_PIN   P2_6
 #define EPD_DC_PIN   P5_7
@@ -26,7 +27,9 @@
 #define EPD_MOSI_PIN P5_0
 
 #define EPD_SPI_CH   XMC_SPI2_CH0
-#define EPD_SPI_BAUD (2000000UL)
+#define EPD_SPI_BAUD (8000000UL)
+
+static uint32_t s_burst_ms;
 
 static const XMC_SPI_CH_CONFIG_t epd_spi_config =
 {
@@ -61,6 +64,9 @@ void epdif_init(void)
                                          XMC_SPI_CPOL_0_CPHA_0,
                                          XMC_SPI_CH_BRG_SHIFT_CLOCK_OUTPUT_SCLK);
     XMC_SPI_CH_Start(EPD_SPI_CH);
+
+    /* 16-word TX FIFO so frame uploads can stream instead of one byte/word. */
+    XMC_USIC_CH_TXFIFO_Configure(EPD_SPI_CH, 0U, XMC_USIC_CH_FIFO_SIZE_16WORDS, 0U);
 
     /* The panel is write-only and single-slave: hold CS low for the session. */
     XMC_GPIO_SetOutputLow(EPD_CS_PIN);
@@ -124,6 +130,64 @@ void epdif_spi_transfer(uint8_t data)
     }
     XMC_SPI_CH_ClearStatusFlag(EPD_SPI_CH,
                                XMC_SPI_CH_STATUS_FLAG_TRANSMIT_SHIFT_INDICATION);
+}
+
+void epdif_spi_write_burst(const uint8_t *data, uint32_t len)
+{
+    uint32_t t0 = board_millis();
+
+    for (uint32_t i = 0U; i < len; i++)
+    {
+        while (XMC_USIC_CH_TXFIFO_IsFull(EPD_SPI_CH) != false)
+        {
+            /* only block when the FIFO is full, not for every word */
+        }
+        XMC_SPI_CH_Transmit(EPD_SPI_CH, (uint16_t)data[i], XMC_SPI_CH_MODE_STANDARD);
+    }
+
+    /* Drain: FIFO empty, then the last word must have left the shift register. */
+    while (XMC_USIC_CH_TXFIFO_IsEmpty(EPD_SPI_CH) == false)
+    {
+    }
+    while ((EPD_SPI_CH->TCSR & USIC_CH_TCSR_TDV_Msk) != 0U)
+    {
+    }
+    for (volatile uint32_t d = 0U; d < 200U; d++)
+    {
+        /* let the final word finish shifting before DC changes */
+    }
+
+    s_burst_ms = board_millis() - t0;
+}
+
+void epdif_spi_write_burst_fill(uint8_t value, uint32_t len)
+{
+    uint32_t t0 = board_millis();
+
+    for (uint32_t i = 0U; i < len; i++)
+    {
+        while (XMC_USIC_CH_TXFIFO_IsFull(EPD_SPI_CH) != false)
+        {
+        }
+        XMC_SPI_CH_Transmit(EPD_SPI_CH, (uint16_t)value, XMC_SPI_CH_MODE_STANDARD);
+    }
+
+    while (XMC_USIC_CH_TXFIFO_IsEmpty(EPD_SPI_CH) == false)
+    {
+    }
+    while ((EPD_SPI_CH->TCSR & USIC_CH_TCSR_TDV_Msk) != 0U)
+    {
+    }
+    for (volatile uint32_t d = 0U; d < 200U; d++)
+    {
+    }
+
+    s_burst_ms = board_millis() - t0;
+}
+
+uint32_t epdif_last_burst_ms(void)
+{
+    return s_burst_ms;
 }
 
 uint32_t epdif_spi_hz(void)

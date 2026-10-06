@@ -54,6 +54,20 @@ void epdif_delay_ms(uint32_t ms);
 /** @brief Clock one byte out on MOSI (MSB first). */
 void epdif_spi_transfer(uint8_t data);
 
+/**
+ * @brief Stream @p len bytes through the USIC TX FIFO (blocking when full).
+ *
+ * Much faster than epdif_spi_transfer() per byte for large payloads (frame
+ * uploads): only waits when the FIFO is full, not for every word.
+ */
+void epdif_spi_write_burst(const uint8_t *data, uint32_t len);
+
+/** @brief Stream @p len copies of @p value through the TX FIFO. */
+void epdif_spi_write_burst_fill(uint8_t value, uint32_t len);
+
+/** @brief Duration of the most recent burst, in milliseconds. */
+uint32_t epdif_last_burst_ms(void);
+
 /** @brief Actual SPI shift clock in Hz, computed from the USIC FDR/BRG. */
 uint32_t epdif_spi_hz(void);
 

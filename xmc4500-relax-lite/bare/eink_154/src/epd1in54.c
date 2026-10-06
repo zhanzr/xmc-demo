@@ -235,10 +235,8 @@ void epd_set_frame_memory_full(const uint8_t *image_buffer)
     epd_set_full_window();
 
     epd_send_command(WRITE_RAM);
-    for (uint32_t i = 0; i < EPD_FB_SIZE; i++)
-    {
-        epd_send_data(image_buffer[i]);
-    }
+    epdif_write_pin(EPDIF_PIN_DC, 1);
+    epdif_spi_write_burst(image_buffer, EPD_FB_SIZE);
 }
 
 void epd_clear_frame_memory(uint8_t color)
@@ -246,19 +244,15 @@ void epd_clear_frame_memory(uint8_t color)
     epd_set_full_window();
 
     epd_send_command(WRITE_RAM);
-    for (uint32_t i = 0; i < EPD_FB_SIZE; i++)
-    {
-        epd_send_data(color);
-    }
+    epdif_write_pin(EPDIF_PIN_DC, 1);
+    epdif_spi_write_burst_fill(color, EPD_FB_SIZE);
 
     if (s_variant == EPD_VARIANT_V2)
     {
         /* Also clear the previous-image RAM so a full refresh starts clean. */
         epd_send_command(WRITE_RAM_REDUNDANT);
-        for (uint32_t i = 0; i < EPD_FB_SIZE; i++)
-        {
-            epd_send_data(color);
-        }
+        epdif_write_pin(EPDIF_PIN_DC, 1);
+        epdif_spi_write_burst_fill(color, EPD_FB_SIZE);
     }
 }
 
