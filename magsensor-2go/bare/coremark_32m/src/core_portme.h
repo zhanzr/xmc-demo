@@ -40,19 +40,15 @@
 #define TOSTRING(x) STRINGIFY(x)
 #endif
 
-/* Report the flags actually used: the GCC default adds -funroll-all-loops, while
-   Arm Compiler 6 rejects that and gets -funroll-loops instead (see the BENCH_OPT
-   default in CMakeLists.txt). Otherwise the report would misstate the build. */
+/* Report the flags actually used: AC6 rejects -funroll-all-loops and gets
+   -funroll-loops instead (see the BENCH_OPT default in CMakeLists.txt). */
 #if defined(__ARMCC_VERSION)
 #define FLAGS_STR "-Ofast -ffp-contract=fast -funroll-loops"
 #else
 #define FLAGS_STR "-Ofast -ffp-contract=fast -funroll-all-loops"
 #endif
-/* CoreMark runs three phases (matrix, state, list-join) of ITERATIONS each and
-   rejects results shorter than 10 s with "Errors detected". Measured on this
-   32 MHz Cortex-M0+ at 42.4 iterations/s (GCC, MEM_STATIC), so 500 iterations
-   lands at ~11.8 s: comfortably over the 10 s floor, and quick enough to iterate
-   on. Override on the compiler command line (-DITERATIONS=...) for longer runs. */
+/* Three phases of ITERATIONS each, and results under 10 s are rejected.
+   500 iterations ~ 11.8 s at the measured 42 iterations/s. */
 #ifndef ITERATIONS
 #define ITERATIONS 500
 #endif

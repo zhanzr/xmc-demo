@@ -42,6 +42,12 @@ endif()
 
 project(coremark_32m C ASM)
 
+# Restore the GNU-style link rule; CMake's ARMClang module replaces it with an
+# armlink rule that GNU ld cannot use.
+if(XMC_TOOLCHAIN STREQUAL "armclang")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/armclang-postproject.cmake)
+endif()
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
@@ -73,10 +79,8 @@ add_executable(${PROJECT_NAME}.elf
     ${CORE}/core_util.c
 )
 
-# CoreMark itself runs with MEM_STATIC (no malloc), but newlib's stdio still
-# allocates a BUFSIZ buffer per stream on first use. Without an arena printf()
-# trips a "Balloc succeeded" assertion and the run stops at the first report.
-# Must be set before including the board module, which consumes it.
+# MEM_STATIC means CoreMark never allocates, but newlib's stdio still does, so
+# it needs the board's static arena too. Set before including the board module.
 set(XMC_HEAP_SIZE 4096)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/xmc1100_board.cmake)
@@ -90,8 +94,9 @@ if(XMC_LTO)
 endif()
 
 if(BENCH_OPT_C)
+    separate_arguments(BENCH_OPT_C_LIST NATIVE_COMMAND "${BENCH_OPT_C}")
     target_compile_options(${PROJECT_NAME}.elf PRIVATE
-        "$<$<COMPILE_LANGUAGE:C>:${BENCH_OPT_C}>")
+        "$<$<COMPILE_LANGUAGE:C>:${BENCH_OPT_C_LIST}>")
 endif()
 
 target_include_directories(${PROJECT_NAME}.elf PRIVATE

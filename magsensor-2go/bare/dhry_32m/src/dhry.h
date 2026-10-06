@@ -410,24 +410,10 @@ typedef int     One_Fifty;
 typedef char    Capital_Letter;
 typedef int     Boolean;
 typedef char    Str_30 [31];
-/* Array dimensions.
- *
- * Not the canonical Dhrystone 2.1 [8]/[8][8]. This variant's Proc_8 writes
- * Arr_1_Glob[8], [9] and [38], and Arr_2_Glob[8][7], [8][8], [8][9] and
- * [28][8] (Int_Loc == 8 in Proc_8), so it needs at least 39 elements in
- * Arr_1_Glob and 29x10 in Arr_2_Glob. The upstream dhry_100m project simply used
- * [50] and [50][50], which costs 10,000 bytes -- 61% of this board's 16 KB SRAM
- * and leaves no room for the stack or stdio buffers.
- *
- * [40] and [30][10] are the smallest shapes that keep every access above in
- * bounds, costing 1,360 bytes. Proc_8 only touches a handful of elements
- * regardless of the declared size, so the dimensions affect memory footprint
- * only, not the instruction count -- the Dhrystones/Second score is unchanged.
- * Declaring them exactly this way also keeps the built-in self-checks honest:
- * Arr_1_Glob[8] really is 7, and Arr_2_Glob[8][7] really is 10 + run count
- * (Proc_8 increments it once per run), instead of reading out-of-bounds memory
- * that happens to hold the expected value.
- */
+/* This variant's Proc_8 reaches Arr_1_Glob[38] and Arr_2_Glob[28][8], so upstream's
+ * [50]/[50][50] (10 KB, 61% of this board's 16 KB SRAM) is reduced to the smallest
+ * shapes that keep every access in bounds. Proc_8 touches a fixed number of
+ * elements regardless of size, so the score is unaffected. */
 typedef int     Arr_1_Dim [40];
 typedef int     Arr_2_Dim [30] [10];
 

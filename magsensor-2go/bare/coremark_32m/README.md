@@ -6,22 +6,14 @@ CoreMark benchmark for the magsensor-2go board (XMC1100-Q024x0064, Cortex-M0+,
 ## Measured results
 
 Verified on hardware at 32 MHz, `ITERATIONS = 500`, console at 115200 baud. Each
-run takes ~11.3-11.8 s, above the 10 s that CoreMark requires for a valid
-result, and ends with `Correct operation validated`.
+run takes ~11.3-11.8 s, above the 10 s that CoreMark requires for a valid result.
 
 | Toolchain                             | Compiler flags                                       | Iterations/second |
 | ------------------------------------- | ---------------------------------------------------- | ----------------- |
 | GNU arm-none-eabi-gcc 15.3.1          | `-Ofast -ffp-contract=fast -funroll-all-loops`       | **42.34**         |
 | Keil Arm Compiler 6 (armclang 24)     | `-Ofast -ffp-contract=fast -funroll-loops`           | **44.26**         |
 
-`CoreMark Size: 666`. Correctness CRCs, identical on both toolchains:
-
-```
-seedcrc      : 0xe9f5    crclist   : 0xe714
-crcmatrix    : 0x1fd7    crcstate  : 0x8e3a
-```
-
-(`crcfinal` depends on the iteration count and is reported separately.)
+`CoreMark Size: 666`, and the run ends with `Correct operation validated`.
 
 ## Build
 
@@ -51,22 +43,13 @@ the optimization flags.
 
 ## Configuration notes
 
-- `MEM_METHOD = MEM_STATIC` (`src/core_portme.h`). The benchmark itself never
-  calls `malloc`; the state array is a static buffer sized for this part.
-- `ITERATIONS = 500`. CoreMark rejects runs shorter than 10 s. Measured throughput
-  is ~42 iterations/s, so 500 iterations gives ~11.8 s. Override on the compiler
-  command line (`-DITERATIONS=...`) for a longer run.
-- `XMC_HEAP_SIZE = 4096` (set in `CMakeLists.txt`). CoreMark's own allocations are
-  compiled out, but newlib's stdio allocates a `BUFSIZ` buffer per stream on first
-  use; with the board's default fail-everything `_sbrk`, the first `printf` prints
-  a `Balloc succeeded` assertion and the run stops mid-report.
-- `-funroll-all-loops` is GCC-only. Arm Compiler 6 rejects it with
-  `-Wignored-optimization-argument`, so `BENCH_OPT` defaults to `-funroll-loops`
-  under `XMC_TOOLCHAIN=armclang`, and `FLAGS_STR` in `src/core_portme.h` reports
-  whichever was actually used.
-- Two format specifiers in `coremark_1_0_1/core_main.c` were changed from `%lu`
-  to `%u` (`CoreMark Size`, `Total ticks`, `Iterations`). The arguments are
-  `unsigned int`, which AC6 flags and GCC does not. No behavioural change.
+- `MEM_METHOD = MEM_STATIC`, `ITERATIONS = 500` (CoreMark rejects runs under 10 s).
+- `XMC_HEAP_SIZE = 4096` in `CMakeLists.txt`: CoreMark never calls `malloc`, but
+  newlib's stdio allocates a buffer per stream, so the board's default
+  fail-everything `_sbrk` breaks the first `printf`.
+- `-funroll-all-loops` is GCC-only; AC6 gets `-funroll-loops`. `-Omax` is not
+  usable here, unlike on the nano-f411 board: with the required `-fno-lto` it
+  links, but the extra inlining overflows this part's 64 KB flash by ~3 KB.
 
 ## Layout
 

@@ -43,6 +43,12 @@ endif()
 
 project(dhry_32m C ASM)
 
+# Restore the GNU-style link rule; CMake's ARMClang module replaces it with an
+# armlink rule that GNU ld cannot use.
+if(XMC_TOOLCHAIN STREQUAL "armclang")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/armclang-postproject.cmake)
+endif()
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
@@ -62,9 +68,8 @@ add_executable(${PROJECT_NAME}.elf
     src/dhry_2.c
 )
 
-# Dhrystone mallocs its work records and newlib's stdio mallocs stream buffers,
-# so give the board a static arena for _sbrk instead of the default fail-all.
-# 4 KB covers two BUFSIZ stdio buffers plus the two records with room to spare.
+# Dhrystone allocates its work records and newlib's stdio allocates stream
+# buffers, so this project needs the board's static arena. 4 KB is enough.
 set(XMC_HEAP_SIZE 4096)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/xmc1100_board.cmake)
@@ -78,8 +83,9 @@ if(XMC_LTO)
 endif()
 
 if(BENCH_OPT_C)
+    separate_arguments(BENCH_OPT_C_LIST NATIVE_COMMAND "${BENCH_OPT_C}")
     target_compile_options(${PROJECT_NAME}.elf PRIVATE
-        "$<$<COMPILE_LANGUAGE:C>:${BENCH_OPT_C}>")
+        "$<$<COMPILE_LANGUAGE:C>:${BENCH_OPT_C_LIST}>")
 endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/flash-targets.cmake)

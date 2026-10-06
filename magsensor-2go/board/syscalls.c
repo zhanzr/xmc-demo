@@ -15,9 +15,11 @@
 
 #include "console.h"
 
-/*
- * Heap size in bytes, 0 by default. Set by cmake/xmc1100_board.cmake from the
- * project's XMC_HEAP_SIZE (e.g. -DXMC_HEAP_SIZE=4096). See _sbrk() below.
+/* Heap. Off by default: failing every allocation is safer than guessing a _sbrk.
+ * Projects that need malloc -- newlib's stdio allocates a buffer per stream on
+ * first use, and Dhrystone allocates its work records -- set XMC_HEAP_SIZE (see
+ * cmake/xmc1100_board.cmake) to serve _sbrk from a static arena. A bump allocator
+ * is enough: these runs never free.
  */
 #ifndef XMC_HEAP_SIZE
 #define XMC_HEAP_SIZE 0
@@ -35,19 +37,6 @@ void _fini(void)
 {
 }
 
-/* Heap.
- *
- * XMC_HEAP_SIZE == 0 (default): no heap, every allocation fails cleanly. A wrong
- * _sbrk would silently corrupt the stack, so refusing is safer than guessing.
- * Note that a failing malloc still lets printf() work, but newlib then prints a
- * "Balloc succeeded" assertion on the console.
- *
- * XMC_HEAP_SIZE > 0: serve _sbrk from a static arena. Two kinds of project need
- * this: Dhrystone, which mallocs its work records, and anything using stdio,
- * because newlib allocates a BUFSIZ buffer per stream on first use. Nothing is
- * freed during a short benchmark run, so a bump allocator is enough; overshoots
- * report ENOMEM rather than walking off the end of the arena.
- */
 #if XMC_HEAP_SIZE > 0
 static uint8_t heap_arena[XMC_HEAP_SIZE] __attribute__((aligned(8)));
 static size_t heap_used;
