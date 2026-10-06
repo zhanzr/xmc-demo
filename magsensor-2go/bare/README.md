@@ -16,6 +16,7 @@ no vendor HAL above `board/`, no framework. Each project is self-contained:
 | [`blink_hello`](blink_hello)           | LED blink + die-temperature (DTS) report over the console, with the live CPU/MCLK frequency |
 | [`dhry_32m`](dhry_32m)                 | Dhrystone 2.1 benchmark: 41,017 (gcc) / 48,054 (Keil AC6) Dhrystones/second at 32 MHz |
 | [`coremark_32m`](coremark_32m)         | CoreMark 1.0.1 benchmark: 42.34 (gcc) / 44.26 (Keil AC6) iterations/second at 32 MHz |
+| [`sweep_io`](sweep_io)                 | GPIO discovery sweep: prints the chip ID, then toggles every drive-capable VQFN24 pad one at a time |
 
 Build one from its own directory:
 

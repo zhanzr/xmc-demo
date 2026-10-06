@@ -1,7 +1,7 @@
 # magsensor-2go — XMC1100-Q024x0064 development projects
 
 Bare-metal projects for the **magsensor-2go** board
-(Infineon **XMC1100-Q024x0064**, 32-pin QFN, Cortex-M0).
+(Infineon **XMC1100-Q024x0064**, VQFN24, Cortex-M0).
 
 ![magsensor-2go board](board_images/board_1.png)
 
@@ -9,7 +9,7 @@ Bare-metal projects for the **magsensor-2go** board
 
 | Item                | Value                                                        |
 | ------------------- | ------------------------------------------------------------ |
-| MCU                 | Infineon XMC1100-Q024x0064 (Cortex-M0, 32-pin QFN)          |
+| MCU                 | Infineon XMC1100-Q024x0064 (Cortex-M0, VQFN24)            |
 | Flash               | 64 KB at `0x10001000` (sector 0 is the boot/config area)     |
 | SRAM                | 16 KB at `0x20000000`, no heap (stack = `BOARD_STACK_SIZE`, 3 KB default) |
 | Clock               | DCO1 = 64 MHz → MCLK = 32 MHz, PCLK = 64 MHz, 1 flash wait state |
@@ -21,7 +21,15 @@ Bare-metal projects for the **magsensor-2go** board
 The console pins are also where the DFP's own `XMC_GPIO_Init()`-style pad setup
 would leave the pads **disabled** (`PORT2->PDISC` resets to `0xFFFF`), so
 `board/console.c` explicitly clears the `P2.1`/`P2.2` bits before enabling the
-alternate function.
+alternate function. Only `PORT2` needs this: its pads are the analog-capable
+ones. `PORT0`/`PORT1` `PDISC` reads as 0 and is **not** writable — a write to it
+raises a HardFault, which is why the DFP header declares those fields `__I`.
+
+## Board connections
+
+Pin-level connections are in [`board-connections.md`](board-connections.md),
+including two corrections to the published board document (LED1 is on `P1.0`,
+not `P0.12`; the sensor's VDD is on board power, not `P1.0`).
 
 ## Clock tree (32 MHz MCLK / 64 MHz PCLK)
 
