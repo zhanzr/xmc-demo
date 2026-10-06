@@ -5,9 +5,6 @@ Bare-metal projects for the **magsensor-2go** board
 
 ![magsensor-2go board](board_images/board_1.png)
 
-The larger photos (`board_0.png`, `board_2.png`) are not embedded here — download
-them from [`board_images/`](board_images) to view them locally.
-
 ## Board facts
 
 | Item                | Value                                                        |
@@ -42,12 +39,9 @@ rather than a hard-coded number.
 
 ## Projects (`bare/`)
 
-| Project                                | What it does                                                        |
-| -------------------------------------- | ------------------------------------------------------------------- |
-| [`bare/blink_hello`](bare/blink_hello) | LED blink + die-temperature (DTS) report over the console, with the live CPU/MCLK frequency |
-
-`bare/` holds projects that use the board layer directly — no RTOS, no HAL above
-`board/`. See [`bare/README.md`](bare/README.md).
+`bare/` holds the sample projects for this board. They use the board layer
+directly — no RTOS, no HAL above `board/`. See
+[`bare/README.md`](bare/README.md) for the project list.
 
 ## Build / flash / serial console
 
@@ -56,7 +50,7 @@ Toolchains: GNU `arm-none-eabi-gcc` (default) or Keil AC6 `armclang`
 `drivers/` (see the root README).
 
 ```bash
-cd bare/blink_hello
+cd bare/<project>
 
 bash build.sh                 # configure + build with gcc into build/
 ninja -C build flash          # program through J-Link (SWD), then reset+run
@@ -66,19 +60,8 @@ cmake -G Ninja -S . -B build-ac6 -DXMC_TOOLCHAIN=armclang
 ninja -C build-ac6
 ```
 
-Then open the J-Link VCP COM port at **115200 8N1** and reset the board. The
-`blink_hello` banner and its 1 Hz DTS report appear on the console, and both LEDs
-blink at 2 Hz:
-
-```text
-magsensor-2go blink_hello: clock report, LED blink, DTS temperature.
-CPU/MCLK: 32000000 Hz (32.000 MHz)
-PCLK    : 64000000 Hz (64.000 MHz)
-Console : USIC0_CH0 TXD=P2.1 RXD=P2.2 115200 8N1 (J-Link VCP)
-LEDs    : LED1=P1.0 LED2=P1.1 (active high)
-[      34 ms] DTS: 35.000 C  (CPU/MCLK 32.000 MHz)
-[    1034 ms] DTS: 35.000 C  (CPU/MCLK 32.000 MHz)
-```
+Open the J-Link VCP COM port at **115200 8N1** and reset the board to see the
+program's console output.
 
 Other useful targets: `ninja flash-bin` (raw `.bin` at `0x10001000`),
 `ninja erase`. J-Link settings can be overridden with `-DJLINK_DEVICE=…`,

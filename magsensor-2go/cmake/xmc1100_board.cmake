@@ -87,6 +87,19 @@ function(xmc1100_apply_board TGT OPT)
         ${BOARD_DIR}/startup_XMC1100.S
     )
 
+    # Heap: the board is heap-free by default (syscalls.c fails every allocation).
+    # A project that needs malloc sets XMC_HEAP_SIZE to a byte count -- either
+    # because it allocates (Dhrystone's work records) or because newlib's stdio
+    # allocates a BUFSIZ buffer per stream on first use, which otherwise makes
+    # printf() print a "Balloc succeeded" assertion.
+    if(NOT DEFINED XMC_HEAP_SIZE)
+        set(XMC_HEAP_SIZE 0)
+    endif()
+    if(XMC_HEAP_SIZE GREATER 0)
+        set_source_files_properties(${BOARD_DIR}/syscalls.c PROPERTIES
+            COMPILE_DEFINITIONS XMC_HEAP_SIZE=${XMC_HEAP_SIZE})
+    endif()
+
     target_include_directories(${TGT} PRIVATE
         ${BOARD_DIR}
         ${XMC_DEVICE_INC}
