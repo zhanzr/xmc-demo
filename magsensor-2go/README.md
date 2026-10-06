@@ -3,11 +3,10 @@
 Bare-metal projects for the **magsensor-2go** board
 (Infineon **XMC1100-Q024x0064**, 32-pin QFN, Cortex-M0).
 
-![magsensor-2go board — top view](board_images/board_0.png)
+![magsensor-2go board](board_images/board_1.png)
 
-![magsensor-2go board — photo 2](board_images/board_1.png)
-
-![magsensor-2go board — photo 3](board_images/board_2.png)
+The larger photos (`board_0.png`, `board_2.png`) are not embedded here — download
+them from [`board_images/`](board_images) to view them locally.
 
 ## Board facts
 

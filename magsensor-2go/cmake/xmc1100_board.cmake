@@ -11,14 +11,17 @@
 # Requires the project to enable ASM (project(X C ASM)).
 #
 # External inputs (all overridable from the command line):
-#   -DDRIVERS_ROOT=...   repo-root drivers/ with the vendored device + CMSIS headers
+#   -DDRIVERS_ROOT=...   repo-root drivers/ container (one vendored folder per XMC series)
+#   -DXMC_SERIES=...     which drivers/<series>/ folder this board builds against
 #   -DXMC_DFP_ROOT=...   full Infineon XMC1000_DFP, used instead of the vendored one
 #   -DCMSIS_ROOT=...     full ARM CMSIS pack, used instead of the vendored one
 
 set(BOARD_DIR ${CMAKE_CURRENT_LIST_DIR}/../board)
 
 set(DRIVERS_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../drivers" CACHE PATH
-    "Repo-root drivers/ folder holding the vendored CMSIS + XMC1100 headers")
+    "Repo-root drivers/ container with one vendored folder per XMC series")
+set(XMC_SERIES "xmc1" CACHE STRING
+    "Which drivers/<series>/ vendored folder this board builds against (xmc1, xmc4, ...)")
 set(XMC_DFP_ROOT "" CACHE PATH
     "Root of a full Infineon XMC1000 Device Family Pack (optional; overrides vendored device headers)")
 set(CMSIS_ROOT "" CACHE PATH
@@ -27,13 +30,13 @@ set(CMSIS_ROOT "" CACHE PATH
 if(XMC_DFP_ROOT)
     set(XMC_DEVICE_INC ${XMC_DFP_ROOT}/Device/XMC1100_series/Include)
 else()
-    set(XMC_DEVICE_INC ${DRIVERS_ROOT}/CMSIS/Include/Device/Infineon/XMC1100_series/Include)
+    set(XMC_DEVICE_INC ${DRIVERS_ROOT}/${XMC_SERIES}/CMSIS/Include/Device/Infineon/XMC1100_series/Include)
 endif()
 
 if(CMSIS_ROOT)
     set(CMSIS_CORE_INC ${CMSIS_ROOT}/CMSIS/Core/Include)
 else()
-    set(CMSIS_CORE_INC ${DRIVERS_ROOT}/CMSIS/Include)
+    set(CMSIS_CORE_INC ${DRIVERS_ROOT}/${XMC_SERIES}/CMSIS/Include)
 endif()
 
 # The DFP linker script defaults to a 1 KB stack, which newlib's printf blows
