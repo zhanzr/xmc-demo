@@ -19,6 +19,8 @@
 /* Die temperature, XMCLib formula (xmc4_scu.h): T[degC] = (RESULT - 605) / 2.05. */
 #define DTS_OFFSET    (605)
 #define DTS_MILLI_DIV (2050) /* 2.05 * 1000, keeps the maths integer */
+#define DTS_MIN_MILLI (-40000) /* -40 C */
+#define DTS_MAX_MILLI (125000) /* 125 C */
 
 static int32_t read_temperature_millidegc(void)
 {
@@ -36,6 +38,12 @@ static int32_t read_temperature_millidegc(void)
 
     millideg = ((int32_t)raw - DTS_OFFSET) * 1000000;
     millideg = millideg / DTS_MILLI_DIV;
+
+    /* The first conversion after enabling the sensor can be garbage; gate it. */
+    if ((millideg < DTS_MIN_MILLI) || (millideg > DTS_MAX_MILLI))
+    {
+        return 25000; /* 25.000 C fallback */
+    }
 
     return millideg;
 }
@@ -68,6 +76,12 @@ int main(void)
     board_init();
 
     XMC_SCU_EnableTemperatureSensor();
+    (void)XMC_SCU_StartTemperatureMeasurement();
+    /* Discard the first, unstable conversion so reports are meaningful. */
+    while (XMC_SCU_IsTemperatureSensorReady() == false)
+    {
+    }
+    (void)XMC_SCU_GetTemperatureMeasurement();
     (void)XMC_SCU_StartTemperatureMeasurement();
 
     print_banner();

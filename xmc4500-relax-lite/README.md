@@ -26,6 +26,64 @@ alternate function and the input is selected directly in `USIC1_CH0.DX0CR`.
 
 Pin-level connections are in [`board-connections.md`](board-connections.md).
 
+## Expansion headers (X1 / X2)
+
+Signals are listed top-to-bottom in header order; each row is the two pins of one
+row (left pin, then right pin).
+
+### X1
+
+| Pin (left) | Pin (right) |
+| ---------- | ----------- |
+| GND        | GND         |
+| GND        | GND         |
+| GND        | RST#        |
+| P2.1       | P2.10       |
+| P2.14      | P14.8       |
+| P2.15      | P14.9       |
+| VAREF      | P14.0       |
+| P14.1      | P14.2       |
+| P14.3      | P14.4       |
+| P14.5      | P14.6       |
+| P14.7      | P14.12      |
+| P14.13     | P14.14      |
+| P14.15     | P15.2       |
+| P15.3      | HIB_0       |
+| HIB_1      | P3.0        |
+| P3.1       | P3.2        |
+| P0.9       | P0.1        |
+| P0.10      | P0.0        |
+| V33        | V33         |
+| V50        | V50         |
+
+### X2
+
+| Pin (left)             | Pin (right)           |
+| ---------------------- | --------------------- |
+| GND                    | GND                   |
+| GND                    | GND                   |
+| P2.6                   | P5.7                  |
+| P5.2                   | P5.1                  |
+| P5.0                   | P1.15                 |
+| P1.14                  | P1.13                 |
+| P1.12                  | P1.11                 |
+| P1.10                  | P1.5                  |
+| P1.4                   | P1.3                  |
+| P1.2                   | P1.1                  |
+| P1.0                   | P1.9                  |
+| P1.8                   | P0.8                  |
+| P0.7                   | P3.4                  |
+| P3.3                   | P0.12                 |
+| P0.11                  | P0.6                  |
+| P0.5 (debug UART)      | P0.2                  |
+| P0.3                   | P0.4 (debug UART)     |
+| GND                    | GND                   |
+| V33                    | V33                   |
+| V50                    | V50                   |
+
+Note: `P0.4` (RXD) and `P0.5` (TXD) are the debug console UART — see the
+[`eink_154`](bare/eink_154) project for an e-paper module wired to X2.
+
 ## Clock tree (120 MHz)
 
 `board/system_XMC4500.c` (vendored from the DFP, version V3.1.7) runs from the

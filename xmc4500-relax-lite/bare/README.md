@@ -16,6 +16,7 @@ no vendor HAL above `board/`, no framework. Each project is self-contained:
 | [`blink_hello`](blink_hello)   | LED blink + die-temperature / EVR13 / EVR33 report over the console, with the live CPU/fPB frequency |
 | [`dhry_120m`](dhry_120m)       | Dhrystone 2.1 benchmark at 120 MHz (score not measured on hardware yet)      |
 | [`coremark_120m`](coremark_120m) | CoreMark 1.0.1 benchmark at 120 MHz (score not measured on hardware yet)   |
+| [`eink_154`](eink_154)         | 1.54" 200x200 monochrome e-paper (LuatOS Eink-1.54 / SSD1608) over USIC2_CH0 SPI |
 
 Build one from its own directory:
 
